@@ -4,10 +4,19 @@ console.log(galleryItems);
 
 // ГАЛЕРЕЯ
 
+// получаю сылки
+
+const refs = {
+  gallery: document.querySelector('.js-gallery'),
+  lightbox: document.querySelector('.js-lightbox'),
+  lightboxImage: document.querySelector('.lightbox__image'),
+  lightboxButton: document.querySelector('button[data-action="close-lightbox"]'),
+  lightboxOverlay: document.querySelector('.lightbox__overlay'),
+  };
+
 // перебор галереи
 
-galleryItems.forEach(element => {
-
+galleryItems.forEach((element,index) => {
 
   // создаю элементы
 
@@ -15,26 +24,23 @@ galleryItems.forEach(element => {
   const linkRef = document.createElement('a');
   const imgRef = document.createElement('img');
 
-  // получаю сылки
-
-  const listRef = document.querySelector('.js-gallery');
-  
-  
-
   // console.log
 
   console.log(imgRef);
   console.log(itemRef);
   console.log(linkRef);
-  console.log(listRef);
+  console.log(refs.gallery);
   console.log(element);
+  console.log(index);
 
   // Записываю значения
 
-  // linkRef.href = element.original;
+  linkRef.href = element.original;
   imgRef.src = element.preview;
   imgRef.setAttribute('data-source', element.original);
   imgRef.alt = element.description;
+  imgRef.setAttribute('data-index', index);
+  
 
   // Записываю классы
 
@@ -46,36 +52,75 @@ galleryItems.forEach(element => {
 
   linkRef.appendChild(imgRef);
   itemRef.appendChild(linkRef);
-  listRef.append(itemRef);
+  refs.gallery.append(itemRef);
   
 });
 
+
+
 // МОДАЛЬНОЕ ОКНО
-
-// получаю сылки
-
-const lightboxRef = document.querySelector('.js-lightbox');
-  const lightboxImageRef = document.querySelector('.lightbox__image');
-  const lightboxButtonRef = document.querySelector('button[data-action="close-lightbox"]');
-
-// открытие модального окна
-
-const refs = {
-    gallery: document.querySelector('.js-gallery'),
-  };
   
-  refs.gallery.addEventListener('click', onGalleryClick);
+//открытие модального окна
 
-  function onGalleryClick(event) {
-    console.dir(event.target);
-    lightboxRef.classList.add('is-open')
-    lightboxImageRef.src = event.target.dataset.source;
-  };
-  
+refs.gallery.addEventListener('click', onGalleryClick);
+
+// функции
+
+function onGalleryClick(event) {
+  event.preventDefault();
+  console.dir(event.target);
+
   // закрытие модального окна
 
-  lightboxButtonRef.addEventListener('click',onGalleryClose);
-  function onGalleryClose() {
-    lightboxRef.classList.remove('is-open');
-    lightboxImageRef.src = '';
+  refs.lightboxButton.addEventListener('click', onGalleryClose);
+  refs.lightboxOverlay.addEventListener('click', onGalleryClose);
+  window.addEventListener('keydown', onKeyPress);
+  
+  if (event.target.nodeName !== 'IMG') {
+    return;
+  }
+  refs.lightbox.classList.add('is-open');
+  refs.lightboxImage.src = event.target.dataset.source;
+  refs.lightboxImage.setAttribute('data-index',(event.target.dataset.index) );
+};
+  
+function onGalleryClose() {
+  refs.lightbox.classList.remove('is-open');
+  refs.lightboxImage.src = '';
+
+  refs.lightboxButton.removeEventListener('click', onGalleryClose);
+  refs.lightboxOverlay.removeEventListener('click', onGalleryClose);
+  window.removeEventListener('keydown', onKeyPress);
+};
+
+function onKeyPress(event) {
+    
+  console.dir(event)
+  if (event.code === 'Escape') {
+    onGalleryClose()
   };
+
+  let activeIndex = Number(event.target.firstElementChild.dataset.index);
+  console.log(activeIndex);
+    
+  if (event.code === 'ArrowRight') {
+    if (activeIndex !== galleryItems.length - 1) {
+      activeIndex += 1;
+      refs.lightboxImage.src = galleryItems[activeIndex].original;
+      console.log(activeIndex);
+      console.log(refs.lightboxImage);
+      console.log(galleryItems[activeIndex].original);
+    };
+  };
+
+  if (event.code === 'ArrowLeft') {
+    if (activeIndex !== 0) {
+      activeIndex -= 1;
+      refs.lightboxImage.src = galleryItems[activeIndex].original;
+      console.log(activeIndex);
+      console.log(refs.lightboxImage);
+      console.log(galleryItems[activeIndex].original);
+      console.log(galleryItems.index);
+    };
+  };
+}
